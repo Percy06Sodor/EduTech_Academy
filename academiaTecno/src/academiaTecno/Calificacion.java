@@ -1,16 +1,16 @@
 package academiaTecno;
 
 public class Calificacion {
-    private String nombreEvaluacion;
+    private Evaluacion evaluacion;
     private double nota;
 
-    public Calificacion(String nombreEvaluacion, double nota) {
-        this.nombreEvaluacion = nombreEvaluacion;
+    public Calificacion(Evaluacion evaluacion, double nota) {
+        this.evaluacion = evaluacion;
         this.nota = nota;
     }
 
-    public String getNombreEvaluacion() {
-        return nombreEvaluacion;
+    public Evaluacion getEvaluacion() {
+        return evaluacion;
     }
 
     public double getNota() {
@@ -19,6 +19,6 @@ public class Calificacion {
 
     @Override
     public String toString() {
-        return nombreEvaluacion + ": " + nota;
+        return evaluacion.getTitulo() + ": " + nota;
     }
 }

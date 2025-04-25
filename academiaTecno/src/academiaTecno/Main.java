@@ -8,6 +8,7 @@ import javax.swing.JOptionPane;
 public class Main {
 
     public static List<Usuario> listaUsuarios = new ArrayList<>();
+    public static Foro foroGeneral = new Foro();
 
     public static void main(String[] args) {
 
@@ -32,9 +33,9 @@ public class Main {
                 opciones[0]);
 
         if (seleccion == 0) {
-            iniciarSesion(); // 👈 если выбрали "Iniciar sesión"
+            iniciarSesion(); // "Iniciar sesión"
         } else if (seleccion == 1) {
-            RegistroUsuario.registrar(); // 👈 если выбрали "Registrarse"
+            RegistroUsuario.registrar(); // "Registrarse"
         }
 
         System.out.println("\n--- Fin de la aplicación ---");
