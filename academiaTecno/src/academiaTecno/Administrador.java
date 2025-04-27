@@ -2,11 +2,11 @@ package academiaTecno;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.swing.JOptionPane;
 
+
 class Administrador extends Usuario {
-	private List<String> permisos;
+    private List<String> permisos;
     private List<Usuario> listaUsuariosGlobal;
     private List<Curso> cursosCreados;
 
@@ -15,36 +15,31 @@ class Administrador extends Usuario {
         this.permisos = new ArrayList<>();
         this.listaUsuariosGlobal = listaUsuarios;
         this.cursosCreados = new ArrayList<>();
-        permisos.add("gestionUsuarios");
-        permisos.add("gestionCursos");
-
-        // Curso de ejemplo para no dejarlo vacío
-        cursosCreados.add(new Curso("Administración General", "General"));
+        this.permisos.add("gestionUsuarios");
+        this.permisos.add("gestionCursos");
     }
 
     @Override
-    public void mostrarMenu() {
+    public void mostrarMenu(Foro foro) {
         String opcion;
         boolean continuar = true;
 
         while (continuar) {
-            String menuTexto = String.format(
-                "--- Menú Administrador (%s %s) ---\n\n" +
-                "Gestión del Sistema:\n" +
-                "1. Ver Lista de Usuarios\n" +
-                "2. Gestionar Cursos (simulado)\n" +
-                "3. Moderar Foro (simulado)\n\n" +
-                "Gestión de Contenidos:\n" +
-                "4. Agregar Material al Curso\n" +
-                "5. Agregar Material a una Clase\n\n" +
-                "Foro:\n" +
-                "6. Ver Foro\n" +
-                "7. Crear Nuevo Tema\n" +
-                "8. Responder en un Tema\n\n" +
-                "Opciones de Sesión:\n" +
-                "9. Cerrar Sesión",
-                nombre, apellido
-            );
+            String menuTexto = "--- Menú Administrador (" + nombre + " " + apellido + ") ---\n\n"
+                             + "Gestión del Sistema:\n"
+                             + "1. Ver Lista de Usuarios\n"
+                             + "2. Gestionar Cursos (simulado)\n"
+                             + "3. Moderar Foro (simulado)\n\n"
+                             + "Gestión de Contenidos:\n"
+                             + "4. Agregar Material al Curso\n"
+                             + "5. Agregar Material a una Clase\n\n"
+                             + "Foro:\n"
+                             + "6. Ver Temas del Foro\n"
+                             + "7. Ver Mensajes de un Tema\n"
+                             + "8. Crear Nuevo Tema\n"
+                             + "9. Responder en un Tema\n\n"
+                             + "Opciones de Sesión:\n"
+                             + "10. Cerrar Sesión";
 
             opcion = JOptionPane.showInputDialog(null, menuTexto, "Menú Administrador", JOptionPane.PLAIN_MESSAGE);
 
@@ -61,7 +56,7 @@ class Administrador extends Usuario {
                     gestionarCursosSimulado();
                     break;
                 case "3":
-                    moderarForoSimulado();
+                    moderarForoSimulado(foro);
                     break;
                 case "4":
                     agregarMaterialCurso();
@@ -70,15 +65,18 @@ class Administrador extends Usuario {
                     agregarMaterialClase();
                     break;
                 case "6":
-                    verForo();
+                    verTemasForo(foro);
                     break;
                 case "7":
-                    crearTema();
+                    verTemaEspecifico(foro);
                     break;
                 case "8":
-                    agregarMensaje();
+                    crearNuevoTemaForo(foro, this);
                     break;
                 case "9":
+                    responderTema(foro, this);
+                    break;
+                case "10":
                     continuar = false;
                     break;
                 default:
@@ -90,13 +88,12 @@ class Administrador extends Usuario {
 
     private void gestionarUsuariosInteractivo() {
         String listaTexto = "--- Lista de Usuarios ---\n";
-        if (listaUsuariosGlobal.isEmpty()) {
-            listaTexto += "No hay usuarios registrados.";
+        if (listaUsuariosGlobal == null || listaUsuariosGlobal.isEmpty()) {
+            listaTexto += "No hay usuarios registrados o no se tiene acceso.";
         } else {
             for (Usuario usr : listaUsuariosGlobal) {
                 String tipo = usr.getClass().getSimpleName();
-                listaTexto += String.format("ID: %d, Nombre: %s %s, Correo: %s, Tipo: %s\n",
-                                                usr.getId(), usr.getNombre(), usr.getApellido(), usr.getCorreo(), tipo);
+                listaTexto += "ID: " + usr.getId() + ", Nombre: " + usr.getNombre() + " " + usr.getApellido() + ", Correo: " + usr.getCorreo() + ", Tipo: " + tipo + "\n";
             }
         }
         JOptionPane.showMessageDialog(null, listaTexto, "Gestión de Usuarios", JOptionPane.INFORMATION_MESSAGE);
@@ -104,15 +101,18 @@ class Administrador extends Usuario {
 
     private void gestionarCursosSimulado() {
          JOptionPane.showMessageDialog(null, "Función 'Gestionar Cursos' no implementada completamente.", "Gestión de Cursos", JOptionPane.INFORMATION_MESSAGE);
+         // Por completar
     }
 
-     private void moderarForoSimulado() {
-         JOptionPane.showMessageDialog(null, "Función 'Moderar Foro' no implementada.", "Moderar Foro", JOptionPane.INFORMATION_MESSAGE);
+    private void moderarForoSimulado(Foro foro) {
+         foro.moderarForo();
+         //Por completar
+         // JOptionPane.showMessageDialog(null, "Función 'Moderar Foro' no implementada.", "Moderar Foro", JOptionPane.INFORMATION_MESSAGE);
     }
-     
-     private Curso seleccionarCurso() {
-         if (cursosCreados.isEmpty()) {
-             JOptionPane.showMessageDialog(null, "No tienes cursos creados.");
+
+    private Curso seleccionarCurso() {
+         if (cursosCreados == null || cursosCreados.isEmpty()) {
+             JOptionPane.showMessageDialog(null, "No hay cursos creados/gestionados por este administrador.");
              return null;
          }
 
@@ -121,12 +121,10 @@ class Administrador extends Usuario {
              nombresCursos[i] = cursosCreados.get(i).getNombre();
          }
 
-         String seleccion = (String) JOptionPane.showInputDialog(
-             null,
+         String seleccion = (String) JOptionPane.showInputDialog(null,
              "Selecciona un curso:",
              "Cursos Disponibles",
-             JOptionPane.PLAIN_MESSAGE,
-             null,
+             JOptionPane.PLAIN_MESSAGE, null,
              nombresCursos,
              nombresCursos[0]
          );
@@ -138,92 +136,82 @@ class Administrador extends Usuario {
                  return curso;
              }
          }
-
          return null;
-     }
-     
-     private void agregarMaterialCurso() {
-    	    Curso curso = seleccionarCurso();
-    	    if (curso == null) return;
+    }
+    //Por completar
+    private void agregarMaterialCurso() {
+        Curso curso = seleccionarCurso();
+        if (curso == null)
+        	return;
 
-    	    String titulo = JOptionPane.showInputDialog("Título del material:");
-    	    String tipo = JOptionPane.showInputDialog("Tipo (PDF, Video, etc):");
-    	    String url = JOptionPane.showInputDialog("URL o ubicación:");
+        String titulo = JOptionPane.showInputDialog("Título del material:");
+        String tipo = JOptionPane.showInputDialog("Tipo (PDF, Video, etc):");
+        String url = JOptionPane.showInputDialog("URL o ubicación:");
 
-    	    if (titulo != null && tipo != null && url != null &&
-    	        !titulo.equals("") && !tipo.equals("") && !url.equals("")) {
-    	        
-    	        Material nuevo = new Material(titulo, tipo, url);
-    	        curso.agregarMaterialGeneral(nuevo);
+        if (titulo != null && !titulo.trim().isEmpty() &&
+            tipo != null && !tipo.trim().isEmpty() &&
+            url != null && !url.trim().isEmpty()) {
+            Material nuevo = new Material(titulo.trim(), tipo.trim(), url.trim());
+            curso.agregarMaterialGeneral(nuevo);
 
-    	        JOptionPane.showMessageDialog(null, "Material agregado al curso.");
-    	    }
-    	}
-     
-     private void agregarMaterialClase() {
-    	    Curso curso = seleccionarCurso();
-    	    if (curso == null) return;
+            JOptionPane.showMessageDialog(null, "Material agregado al curso '" + curso.getNombre() + "'.");
+        } else {
+             JOptionPane.showMessageDialog(null, "Todos los campos son requeridos.", "Error", JOptionPane.WARNING_MESSAGE);
+        }
+    }
 
-    	    List<Clase> clases = curso.getClases();
-    	    if (clases.isEmpty()) {
-    	        JOptionPane.showMessageDialog(null, "Este curso no tiene clases.");
-    	        return;
-    	    }
+    private void agregarMaterialClase() {
+        Curso curso = seleccionarCurso();
+        if (curso == null) return;
 
-    	    String[] opciones = new String[clases.size()];
-    	    for (int i = 0; i < clases.size(); i++) {
-    	        opciones[i] = "Clase " + clases.get(i).getNumero();
-    	    }
+        List<Clase> clases = curso.getClases();
+        if (clases == null || clases.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Este curso no tiene clases definidas.");
+            return;
+        }
 
-    	    String seleccion = (String) JOptionPane.showInputDialog(
-    	        null, "Selecciona la clase:",
-    	        "Clases del Curso",
-    	        JOptionPane.PLAIN_MESSAGE,
-    	        null, opciones, opciones[0]
-    	    );
+        String[] opcionesClases = new String[clases.size()];
+        for (int i = 0; i < clases.size(); i++) {
+            opcionesClases[i] = "Clase " + clases.get(i).getNumero();
+        }
 
-    	    if (seleccion == null) return;
-    	    int indice = Integer.parseInt(seleccion.replace("Clase ", ""));
-    	    Clase clase = clases.stream().filter(c -> c.getNumero() == indice).findFirst().orElse(null);
-    	    if (clase == null) return;
+        String seleccionClase = (String) JOptionPane.showInputDialog(
+            null, "Selecciona la clase:",
+            "Clases del Curso '" + curso.getNombre() + "'",
+            JOptionPane.PLAIN_MESSAGE,
+            null, opcionesClases, opcionesClases[0]
+        );
 
-    	    String titulo = JOptionPane.showInputDialog("Título del material:");
-    	    String tipo = JOptionPane.showInputDialog("Tipo (PDF, Video, etc):");
-    	    String url = JOptionPane.showInputDialog("URL o ubicación:");
+        if (seleccionClase == null) return;
+        Clase claseSeleccionada = null;
+        for(Clase c : clases) {
+            if (seleccionClase.equals("Clase " + c.getNumero())) {
+                claseSeleccionada = c;
+                break;
+            }
+        }
 
-    	    if (titulo != null && tipo != null && url != null &&
-    	        !titulo.equals("") && !tipo.equals("") && !url.equals("")) {
-    	        
-    	        Material nuevo = new Material(titulo, tipo, url);
-    	        clase.agregarMaterial(nuevo);
+        if (claseSeleccionada == null) {
+             JOptionPane.showMessageDialog(null, "Error al encontrar la clase seleccionada.");
+             return;
+        }
 
-    	        JOptionPane.showMessageDialog(null, "Material agregado a la clase.");
-    	    }
-    	}
-     
-     private void verForo() {
-    	    String contenido = Main.foroGeneral.mostrarForo();
-    	    JOptionPane.showMessageDialog(null, contenido, "Foro General", JOptionPane.INFORMATION_MESSAGE);
-    	}
-     
-     private void crearTema() {
-    	    String titulo = JOptionPane.showInputDialog("Título del nuevo tema:");
-    	    String contenido = JOptionPane.showInputDialog("Contenido del primer mensaje:");
 
-    	    if (titulo != null && contenido != null &&
-    	        !titulo.equals("") && !contenido.equals("")) {
-    	        
-    	        Main.foroGeneral.crearTema(titulo, contenido, this);
-    	        JOptionPane.showMessageDialog(null, "Tema creado exitosamente.");
-    	    }
-    	}
-     
-     private void agregarMensaje() {
-    	    String contenido = JOptionPane.showInputDialog("Contenido de tu respuesta:");
+        // Pide datos del material
+        String titulo = JOptionPane.showInputDialog("Título del material para la " + seleccionClase + ":");
+        String tipo = JOptionPane.showInputDialog("Tipo (PDF, Video, etc):");
+        String url = JOptionPane.showInputDialog("URL o ubicación:");
 
-    	    if (contenido != null && !contenido.equals("")) {
-    	        Main.foroGeneral.responderUltimoTema(contenido, this);
-    	        JOptionPane.showMessageDialog(null, "Mensaje agregado exitosamente.");
-    	    }
-    	}
+        if (titulo != null && !titulo.trim().isEmpty() &&
+            tipo != null && !tipo.trim().isEmpty() &&
+            url != null && !url.trim().isEmpty()) {
+
+            Material nuevo = new Material(titulo.trim(), tipo.trim(), url.trim());
+            claseSeleccionada.agregarMaterial(nuevo);
+
+            JOptionPane.showMessageDialog(null, "Material agregado a la " + seleccionClase + ".");
+        } else {
+             JOptionPane.showMessageDialog(null, "Todos los campos son requeridos.", "Error", JOptionPane.WARNING_MESSAGE);
+        }
+    }
 }

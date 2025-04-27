@@ -2,11 +2,12 @@ package academiaTecno;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.swing.JOptionPane;
+import java.time.LocalDate;
+
 
 class Profesor extends Usuario {
-	private List<Curso> cursosCreados;
+    private List<Curso> cursosCreados;
     private List<Usuario> listaUsuariosGlobal;
 
     public Profesor(int id, String nombre, String apellido, String correo, String contrasena, List<Usuario> listaUsuarios) {
@@ -17,29 +18,27 @@ class Profesor extends Usuario {
     }
 
     @Override
-    public void mostrarMenu() {
+    public void mostrarMenu(Foro foro) {
         String opcion;
         boolean continuar = true;
 
         while (continuar) {
-            String menuTexto = String.format(
-                "--- Menú Profesor (%s %s) ---\n\n" +
-                "Gestión de Cursos:\n" +
-                "1. Crear Curso\n" +
-                "2. Ver Cursos Creados\n" +
-                "3. Calificar Estudiante\n" +
-                "4. Crear Examen Final para un Curso\n" +
-                "5. Crear MiniDesafío para una Clase\n" +
-                "6. Agregar Material al Curso\n" +
-                "7. Agregar Material a una Clase\n\n" +
-                "Foro:\n" +
-                "8. Ver Foro\n" +
-                "9. Crear Nuevo Tema\n" +
-                "10. Responder en un Tema\n\n" +
-                "Opciones de Sesión:\n" +
-                "11. Cerrar Sesión",
-                nombre, apellido
-            );
+            String menuTexto = "--- Menú Profesor (" + nombre + " " + apellido + ") ---\n\n"
+                             + "Gestión de Cursos:\n"
+                             + "1. Crear Curso\n"
+                             + "2. Ver Cursos Creados\n"
+                             + "3. Calificar Estudiante\n"
+                             + "4. Crear Examen Final para un Curso\n"
+                             + "5. Crear MiniDesafío para una Clase\n"
+                             + "6. Agregar Material al Curso\n"
+                             + "7. Agregar Material a una Clase\n\n"
+                             + "Foro:\n"
+                             + "8. Ver Temas del Foro\n"
+                             + "9. Ver Mensajes de un Tema\n"
+                             + "10. Crear Nuevo Tema\n"
+                             + "11. Responder en un Tema\n\n"
+                             + "Opciones de Sesión:\n"
+                             + "12. Cerrar Sesión";
 
             opcion = JOptionPane.showInputDialog(null, menuTexto, "Menú Profesor", JOptionPane.PLAIN_MESSAGE);
 
@@ -49,39 +48,30 @@ class Profesor extends Usuario {
             }
 
             switch (opcion.trim()) {
-                case "1":
-                    crearNuevoCurso();
-                    break;
-                case "2":
-                    verCursosCreados();
-                    break;
-                case "3":
-                    calificarEstudianteInteractivo();
-                    break;
-                case "4":
-                    crearExamenFinal();
-                    break;
-                case "5":
-                    crearMiniDesafio();
-                    break;
-                case "6":
-                    agregarMaterialCurso();
-                    break;
-                case "7":
-                    agregarMaterialClase();
-                    break;
-                case "8":
-                    verForo();
-                    break;
-                case "9":
-                    crearTema();
-                    break;
-                case "10":
-                    agregarMensaje();
-                    break;
-                case "11":
-                    continuar = false;
-                    break;
+                case "1": crearNuevoCurso();
+                break;
+                case "2": verCursosCreados();
+                break;
+                case "3": calificarEstudianteInteractivo();
+                break;
+                case "4": crearExamenFinal();
+                break;
+                case "5": crearMiniDesafio();
+                break;
+                case "6": agregarMaterialCurso();
+                break;
+                case "7": agregarMaterialClase();
+                break;
+                case "8": verTemasForo(foro);
+                break;
+                case "9": verTemaEspecifico(foro);
+                break;
+                case "10": crearNuevoTemaForo(foro, this);
+                break;
+                case "11": responderTema(foro, this);
+                break;
+                case "12": continuar = false;
+                break;
                 default:
                     JOptionPane.showMessageDialog(null, "Opción no válida.", "Error", JOptionPane.WARNING_MESSAGE);
                     break;
@@ -91,310 +81,193 @@ class Profesor extends Usuario {
 
     private void crearNuevoCurso() {
         String nombreCurso = JOptionPane.showInputDialog(null, "Ingrese el nombre del nuevo curso:", "Crear Curso", JOptionPane.QUESTION_MESSAGE);
-        String temaCurso = JOptionPane.showInputDialog(null, "Ingrese el tema del curso:", "Crear Curso", JOptionPane.QUESTION_MESSAGE);
-
-        if (nombreCurso != null && temaCurso != null &&
-            !nombreCurso.equals("") && !temaCurso.equals("")) {
-
-            Curso nuevo = new Curso(nombreCurso, temaCurso);
-            cursosCreados.add(nuevo);
-
-            JOptionPane.showMessageDialog(null, "Curso '" + nombreCurso + "' creado exitosamente.");
+         if (nombreCurso != null) {
+            String nombreCursoLimpio = nombreCurso.trim();
+            if (!nombreCursoLimpio.isEmpty()) {
+                String temaCurso = JOptionPane.showInputDialog(null, "Ingrese el tema del curso:", "Tema del Curso", JOptionPane.QUESTION_MESSAGE);
+                if (temaCurso != null && !temaCurso.trim().isEmpty()) {
+                     Curso nuevoCurso = new Curso(nombreCursoLimpio, temaCurso.trim());
+                     cursosCreados.add(nuevoCurso);
+                     JOptionPane.showMessageDialog(null, "Curso '" + nombreCursoLimpio + "' creado exitosamente.");
+                } else if (temaCurso != null){
+                     JOptionPane.showMessageDialog(null, "El tema del curso no puede estar vacío.", "Error", JOptionPane.WARNING_MESSAGE);
+                }
+            } else {
+                 JOptionPane.showMessageDialog(null, "El nombre del curso no puede estar vacío.", "Error", JOptionPane.WARNING_MESSAGE);
+            }
         }
     }
 
     private void verCursosCreados() {
-        if (cursosCreados.isEmpty()) {
-            JOptionPane.showMessageDialog(null, "No has creado ningún curso.");
-            return;
-        }
-
         String cursosStr = "";
-        for (Curso curso : cursosCreados) {
-            cursosStr += "- " + curso.getNombre() + " (" + curso.getTema() + ")\n";
+        if (cursosCreados.isEmpty()) {
+            cursosStr = "No has creado ningún curso.";
+        } else {
+            for (Curso curso : cursosCreados) {
+                cursosStr += "- " + curso.getNombre() + " (" + curso.getTema() + ")\n";
+            }
         }
-
-        JOptionPane.showMessageDialog(null, "Cursos Creados:\n" + cursosStr);
+        JOptionPane.showMessageDialog(null, "Cursos Creados:\n" + cursosStr, "Mis Cursos Creados", JOptionPane.INFORMATION_MESSAGE);
     }
-    
+
     private Curso seleccionarCurso() {
         if (cursosCreados.isEmpty()) {
             JOptionPane.showMessageDialog(null, "No tienes cursos creados.");
             return null;
         }
-
         String[] nombresCursos = new String[cursosCreados.size()];
         for (int i = 0; i < cursosCreados.size(); i++) {
             nombresCursos[i] = cursosCreados.get(i).getNombre();
         }
-
         String seleccion = (String) JOptionPane.showInputDialog(
-            null,
-            "Selecciona un curso:",
-            "Cursos Disponibles",
-            JOptionPane.PLAIN_MESSAGE,
-            null,
-            nombresCursos,
-            nombresCursos[0]
+            null, "Selecciona un curso:", "Cursos Disponibles",
+            JOptionPane.PLAIN_MESSAGE, null, nombresCursos, nombresCursos[0]
         );
-
         if (seleccion == null) return null;
-
         for (Curso curso : cursosCreados) {
             if (curso.getNombre().equals(seleccion)) {
                 return curso;
             }
         }
-
         return null;
     }
-    
+
     private void crearExamenFinal() {
         Curso curso = seleccionarCurso();
         if (curso == null) return;
-
-        String titulo = JOptionPane.showInputDialog("Título del examen:");
-        if (titulo == null || titulo.equals("")) return;
-
-        List<Pregunta> preguntas = new ArrayList<Pregunta>();
-        boolean seguir = true;
-
-        while (seguir) {
-            String enunciado = JOptionPane.showInputDialog("Escribe la pregunta:");
-            if (enunciado == null || enunciado.equals("")) break;
-
-            List<String> opciones = new ArrayList<String>();
-            for (int i = 0; i < 4; i++) {
-                String opcion = JOptionPane.showInputDialog("Opción " + i + ":");
-                if (opcion != null) opciones.add(opcion);
-            }
-
-            int indiceCorrecto = -1;
-            boolean entradaValida = false;
-
-            while (!entradaValida) {
-                String correcta = JOptionPane.showInputDialog("¿Cuál es la opción correcta? (0–3)");
-                try {
-                    indiceCorrecto = Integer.parseInt(correcta);
-                    if (indiceCorrecto >= 0 && indiceCorrecto < opciones.size()) {
-                        entradaValida = true;
-                    } else {
-                        JOptionPane.showMessageDialog(null, "El número debe estar entre 0 y 3.");
-                    }
-                } catch (NumberFormatException e) {
-                    JOptionPane.showMessageDialog(null, "Debes ingresar un número válido.");
-                }
-            }
-
-            preguntas.add(new Pregunta(enunciado, opciones, indiceCorrecto));
-
-            int continuar = JOptionPane.showConfirmDialog(null, "¿Agregar otra pregunta?", "Continuar", JOptionPane.YES_NO_OPTION);
-            seguir = (continuar == JOptionPane.YES_OPTION);
+        if (curso.getExamenFinal() != null) {
+             int sobrescribir = JOptionPane.showConfirmDialog(null, "El curso ya tiene examen final.\n¿Reemplazarlo?", "Examen Existente", JOptionPane.YES_NO_OPTION);
+             if (sobrescribir != JOptionPane.YES_OPTION) return;
         }
-
-        Examen nuevo = new Examen(titulo, preguntas);
-        curso.asignarExamenFinal(nuevo);
-
-        JOptionPane.showMessageDialog(null, "Examen creado exitosamente.");
+        String tituloExamen = JOptionPane.showInputDialog("Título del examen final para '" + curso.getNombre() + "':");
+        if (tituloExamen == null || tituloExamen.trim().isEmpty()) { if (tituloExamen != null) JOptionPane.showMessageDialog(null, "Título vacío."); return; }
+        List<Pregunta> preguntas = crearListaPreguntasInteractivamente();
+        if (!preguntas.isEmpty()) {
+            Examen nuevoExamen = new Examen(tituloExamen.trim(), preguntas);
+            curso.asignarExamenFinal(nuevoExamen);
+            JOptionPane.showMessageDialog(null, "Examen final creado y asignado a '" + curso.getNombre() + "'.");
+        } else { JOptionPane.showMessageDialog(null, "No se agregaron preguntas."); }
     }
-    
+
     private void crearMiniDesafio() {
         Curso curso = seleccionarCurso();
         if (curso == null) return;
-
         List<Clase> clases = curso.getClases();
-        if (clases.isEmpty()) {
-            JOptionPane.showMessageDialog(null, "Este curso no tiene clases.");
-            return;
-        }
-
+        if (clases == null || clases.isEmpty()) { JOptionPane.showMessageDialog(null, "Curso sin clases."); return; }
         String[] opcionesClases = new String[clases.size()];
-        for (int i = 0; i < clases.size(); i++) {
-            opcionesClases[i] = "Clase " + clases.get(i).getNumero();
+        for (int i = 0; i < clases.size(); i++) { opcionesClases[i] = "Clase " + clases.get(i).getNumero(); }
+        String seleccionClase = (String) JOptionPane.showInputDialog(null, "Selecciona la clase:", "Seleccionar Clase", JOptionPane.QUESTION_MESSAGE, null, opcionesClases, opcionesClases[0]);
+        if (seleccionClase == null) return;
+        Clase claseSeleccionada = null;
+        try {
+             int indiceClase = Integer.parseInt(seleccionClase.replace("Clase ", "").trim());
+             for(Clase c : clases) { if (c.getNumero() == indiceClase) { claseSeleccionada = c; break; } }
+        } catch (NumberFormatException e) { JOptionPane.showMessageDialog(null, "Error al seleccionar."); return; }
+        if (claseSeleccionada == null) { JOptionPane.showMessageDialog(null, "Clase no encontrada."); return; }
+        if (claseSeleccionada.getMiniDesafio() != null) {
+             int sobrescribir = JOptionPane.showConfirmDialog(null, "La clase ya tiene MiniDesafío.\n¿Reemplazarlo?", "Existente", JOptionPane.YES_NO_OPTION);
+             if (sobrescribir != JOptionPane.YES_OPTION) return;
         }
+        String tituloDesafio = JOptionPane.showInputDialog("Título del MiniDesafío para " + seleccionClase + ":");
+        if (tituloDesafio == null || tituloDesafio.trim().isEmpty()) { if (tituloDesafio != null) JOptionPane.showMessageDialog(null, "Título vacío."); return; }
+        List<Pregunta> preguntas = crearListaPreguntasInteractivamente();
+        if (!preguntas.isEmpty()) {
+            MiniDesafio nuevoDesafio = new MiniDesafio(tituloDesafio.trim(), preguntas);
+            claseSeleccionada.asignarMiniDesafio(nuevoDesafio);
+            JOptionPane.showMessageDialog(null, "MiniDesafío creado y asignado a " + seleccionClase + ".");
+        } else { JOptionPane.showMessageDialog(null, "No se agregaron preguntas."); }
+    }
 
-        String seleccion = (String) JOptionPane.showInputDialog(
-            null,
-            "Selecciona la clase:",
-            "Clases",
-            JOptionPane.QUESTION_MESSAGE,
-            null,
-            opcionesClases,
-            opcionesClases[0]
-        );
-
-        if (seleccion == null) return;
-        int indice = Integer.parseInt(seleccion.replace("Clase ", ""));
-        Clase claseSeleccionada = clases.stream()
-            .filter(c -> c.getNumero() == indice)
-            .findFirst()
-            .orElse(null);
-
-        if (claseSeleccionada == null) return;
-
-        String titulo = JOptionPane.showInputDialog("Título del MiniDesafío:");
-        if (titulo == null || titulo.equals("")) return;
-
-        List<Pregunta> preguntas = new ArrayList<Pregunta>();
-        boolean seguir = true;
-
-        while (seguir) {
-            String enunciado = JOptionPane.showInputDialog("Escribe la pregunta:");
-            if (enunciado == null || enunciado.equals("")) break;
-
-            List<String> opcionesPregunta = new ArrayList<String>();
+    private List<Pregunta> crearListaPreguntasInteractivamente() {
+        List<Pregunta> preguntas = new ArrayList<>();
+        boolean seguirAgregando = true;
+        while (seguirAgregando) {
+            String enunciado = JOptionPane.showInputDialog("Enunciado de la pregunta (o cancelar para terminar):");
+            if (enunciado == null || enunciado.trim().isEmpty()) { seguirAgregando = false; break; }
+            List<String> opciones = new ArrayList<>();
             for (int i = 0; i < 4; i++) {
-                String opcion = JOptionPane.showInputDialog("Opción " + i + ":");
-                if (opcion != null) opcionesPregunta.add(opcion);
+                String opcionTxt = JOptionPane.showInputDialog("Opción " + (i + 1) + " para:\n'" + enunciado.trim() + "'");
+                if (opcionTxt == null) { JOptionPane.showMessageDialog(null, "Creación cancelada."); opciones = null; break; }
+                 if (opcionTxt.trim().isEmpty()) { JOptionPane.showMessageDialog(null, "Opción vacía."); i--; continue; }
+                opciones.add(opcionTxt.trim());
             }
-
+            if (opciones == null) continue;
             int indiceCorrecto = -1;
-            boolean entradaValida = false;
-
-            while (!entradaValida) {
-                String correcta = JOptionPane.showInputDialog("¿Cuál es la opción correcta? (0–3)");
+            boolean indiceValido = false;
+            while (!indiceValido) {
+                String correctaStr = JOptionPane.showInputDialog("¿Opción correcta? (1-4)");
+                if (correctaStr == null) { JOptionPane.showMessageDialog(null, "Creación cancelada."); indiceCorrecto = -2; break; }
                 try {
-                    indiceCorrecto = Integer.parseInt(correcta);
-                    if (indiceCorrecto >= 0 && indiceCorrecto < opcionesPregunta.size()) {
-                        entradaValida = true;
-                    } else {
-                        JOptionPane.showMessageDialog(null, "El número debe estar entre 0 y 3.");
-                    }
-                } catch (NumberFormatException e) {
-                    JOptionPane.showMessageDialog(null, "Debes ingresar un número válido.");
-                }
+                    int seleccionUsuario = Integer.parseInt(correctaStr.trim());
+                    if (seleccionUsuario >= 1 && seleccionUsuario <= 4) { indiceCorrecto = seleccionUsuario - 1; indiceValido = true; }
+                    else { JOptionPane.showMessageDialog(null, "Número entre 1 y 4.", "Error", JOptionPane.WARNING_MESSAGE); }
+                } catch (NumberFormatException e) { JOptionPane.showMessageDialog(null, "Número inválido.", "Error", JOptionPane.ERROR_MESSAGE); }
             }
-
-            preguntas.add(new Pregunta(enunciado, opcionesPregunta, indiceCorrecto));
-
+             if (indiceCorrecto == -2) continue;
+            preguntas.add(new Pregunta(enunciado.trim(), opciones, indiceCorrecto));
+            JOptionPane.showMessageDialog(null, "Pregunta agregada.");
             int continuar = JOptionPane.showConfirmDialog(null, "¿Agregar otra pregunta?", "Continuar", JOptionPane.YES_NO_OPTION);
-            seguir = (continuar == JOptionPane.YES_OPTION);
+            if (continuar != JOptionPane.YES_OPTION) { seguirAgregando = false; }
         }
-
-        MiniDesafio nuevo = new MiniDesafio(titulo, preguntas);
-        claseSeleccionada.asignarMiniDesafio(nuevo);
-
-        JOptionPane.showMessageDialog(null, "MiniDesafío creado exitosamente.");
+        return preguntas;
     }
 
     private void calificarEstudianteInteractivo() {
-        String idEstudianteStr = JOptionPane.showInputDialog(null, "Ingrese el ID del estudiante a calificar:", "Calificar Estudiante", JOptionPane.QUESTION_MESSAGE);
+        String idEstudianteStr = JOptionPane.showInputDialog(null, "Ingrese ID del estudiante a calificar:", "Calificar Estudiante", JOptionPane.QUESTION_MESSAGE);
         if (idEstudianteStr == null) return;
-
         try {
             int idEstudiante = Integer.parseInt(idEstudianteStr.trim());
             Estudiante estudianteEncontrado = null;
-
             for (Usuario usr : listaUsuariosGlobal) {
-                if (usr instanceof Estudiante && usr.getId() == idEstudiante) {
-                    estudianteEncontrado = (Estudiante) usr;
-                    break;
-                }
+                if (usr instanceof Estudiante && usr.getId() == idEstudiante) { estudianteEncontrado = (Estudiante) usr; break; }
             }
-
             if (estudianteEncontrado != null) {
                 String calificacionStr = JOptionPane.showInputDialog(null, "Ingrese la calificación para " + estudianteEncontrado.getNombre() + " " + estudianteEncontrado.getApellido() + ":", "Ingresar Calificación", JOptionPane.QUESTION_MESSAGE);
                 if (calificacionStr == null) return;
-
                 try {
                     double calificacion = Double.parseDouble(calificacionStr.trim());
                     estudianteEncontrado.registrarCalificacionExamen(calificacion);
                     JOptionPane.showMessageDialog(null, "Calificación " + calificacion + " registrada para el estudiante ID " + idEstudiante + ".", "Calificación Exitosa", JOptionPane.INFORMATION_MESSAGE);
-
-                } catch (NumberFormatException e) {
-                    JOptionPane.showMessageDialog(null, "La calificación ingresada no es un número válido.", "Error de Formato", JOptionPane.ERROR_MESSAGE);
-                }
-            } else {
-                JOptionPane.showMessageDialog(null, "No se encontró ningún estudiante con el ID " + idEstudiante + ".", "Error", JOptionPane.WARNING_MESSAGE);
-            }
-
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(null, "El ID ingresado no es un número válido.", "Error de Formato", JOptionPane.ERROR_MESSAGE);
-        }
+                } catch (NumberFormatException e) { JOptionPane.showMessageDialog(null, "Calificación inválida.", "Error", JOptionPane.ERROR_MESSAGE); }
+            } else { JOptionPane.showMessageDialog(null, "Estudiante ID " + idEstudiante + " no encontrado.", "Error", JOptionPane.WARNING_MESSAGE); }
+        } catch (NumberFormatException e) { JOptionPane.showMessageDialog(null, "ID inválido.", "Error", JOptionPane.ERROR_MESSAGE); }
     }
-    
+
     private void agregarMaterialCurso() {
         Curso curso = seleccionarCurso();
         if (curso == null) return;
-
         String titulo = JOptionPane.showInputDialog("Título del material:");
         String tipo = JOptionPane.showInputDialog("Tipo (PDF, Video, etc):");
         String url = JOptionPane.showInputDialog("URL o ubicación:");
-
-        if (titulo != null && tipo != null && url != null &&
-            !titulo.equals("") && !tipo.equals("") && !url.equals("")) {
-            
-            Material nuevo = new Material(titulo, tipo, url);
+        if (titulo != null && !titulo.trim().isEmpty() && tipo != null && !tipo.trim().isEmpty() && url != null && !url.trim().isEmpty()) {
+            Material nuevo = new Material(titulo.trim(), tipo.trim(), url.trim());
             curso.agregarMaterialGeneral(nuevo);
-
-            JOptionPane.showMessageDialog(null, "Material agregado al curso.");
-        }
+            JOptionPane.showMessageDialog(null, "Material agregado al curso '" + curso.getNombre() + "'.");
+        } else { JOptionPane.showMessageDialog(null, "Campos requeridos.", "Error", JOptionPane.WARNING_MESSAGE); }
     }
-    
+
     private void agregarMaterialClase() {
         Curso curso = seleccionarCurso();
         if (curso == null) return;
-
         List<Clase> clases = curso.getClases();
-        if (clases.isEmpty()) {
-            JOptionPane.showMessageDialog(null, "Este curso no tiene clases.");
-            return;
-        }
-
-        String[] opciones = new String[clases.size()];
-        for (int i = 0; i < clases.size(); i++) {
-            opciones[i] = "Clase " + clases.get(i).getNumero();
-        }
-
-        String seleccion = (String) JOptionPane.showInputDialog(
-            null, "Selecciona la clase:",
-            "Clases del Curso",
-            JOptionPane.PLAIN_MESSAGE,
-            null, opciones, opciones[0]
-        );
-
-        if (seleccion == null) return;
-        int indice = Integer.parseInt(seleccion.replace("Clase ", ""));
-        Clase clase = clases.stream().filter(c -> c.getNumero() == indice).findFirst().orElse(null);
-        if (clase == null) return;
-
-        String titulo = JOptionPane.showInputDialog("Título del material:");
+        if (clases == null || clases.isEmpty()) { JOptionPane.showMessageDialog(null, "Curso sin clases."); return; }
+        String[] opcionesClases = new String[clases.size()];
+        for (int i = 0; i < clases.size(); i++) { opcionesClases[i] = "Clase " + clases.get(i).getNumero(); }
+        String seleccionClase = (String) JOptionPane.showInputDialog(null, "Selecciona la clase:", "Clases del Curso '" + curso.getNombre() + "'", JOptionPane.PLAIN_MESSAGE, null, opcionesClases, opcionesClases[0]);
+        if (seleccionClase == null) return;
+        Clase claseSeleccionada = null;
+        try {
+             int indiceClase = Integer.parseInt(seleccionClase.replace("Clase ", "").trim());
+             for(Clase c : clases) { if (c.getNumero() == indiceClase) { claseSeleccionada = c; break; } }
+        } catch (NumberFormatException e) { JOptionPane.showMessageDialog(null, "Error al seleccionar."); return; }
+        if (claseSeleccionada == null) { JOptionPane.showMessageDialog(null, "Error al encontrar clase."); return; }
+        String titulo = JOptionPane.showInputDialog("Título del material para la " + seleccionClase + ":");
         String tipo = JOptionPane.showInputDialog("Tipo (PDF, Video, etc):");
         String url = JOptionPane.showInputDialog("URL o ubicación:");
-
-        if (titulo != null && tipo != null && url != null &&
-            !titulo.equals("") && !tipo.equals("") && !url.equals("")) {
-            
-            Material nuevo = new Material(titulo, tipo, url);
-            clase.agregarMaterial(nuevo);
-
-            JOptionPane.showMessageDialog(null, "Material agregado a la clase.");
-        }
-    }
-    
-    private void verForo() {
-        String contenido = Main.foroGeneral.mostrarForo();
-        JOptionPane.showMessageDialog(null, contenido, "Foro General", JOptionPane.INFORMATION_MESSAGE);
-    }
-    
-    private void crearTema() {
-        String titulo = JOptionPane.showInputDialog("Título del nuevo tema:");
-        String contenido = JOptionPane.showInputDialog("Contenido del primer mensaje:");
-
-        if (titulo != null && contenido != null &&
-            !titulo.equals("") && !contenido.equals("")) {
-            
-            Main.foroGeneral.crearTema(titulo, contenido, this);
-            JOptionPane.showMessageDialog(null, "Tema creado exitosamente.");
-        }
-    }
-    
-    private void agregarMensaje() {
-        String contenido = JOptionPane.showInputDialog("Contenido de tu respuesta:");
-
-        if (contenido != null && !contenido.equals("")) {
-            Main.foroGeneral.responderUltimoTema(contenido, this);
-            JOptionPane.showMessageDialog(null, "Mensaje agregado exitosamente.");
-        }
+        if (titulo != null && !titulo.trim().isEmpty() && tipo != null && !tipo.trim().isEmpty() && url != null && !url.trim().isEmpty()) {
+            Material nuevo = new Material(titulo.trim(), tipo.trim(), url.trim());
+            claseSeleccionada.agregarMaterial(nuevo);
+            JOptionPane.showMessageDialog(null, "Material agregado a la " + seleccionClase + ".");
+        } else { JOptionPane.showMessageDialog(null, "Campos requeridos.", "Error", JOptionPane.WARNING_MESSAGE); }
     }
 }
